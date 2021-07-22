@@ -1,12 +1,15 @@
 package pl.edu.wat.customerreservations.services;
 
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import pl.edu.wat.customerreservations.dtos.CustomerRequest;
 import pl.edu.wat.customerreservations.dtos.CustomerResponse;
+import pl.edu.wat.customerreservations.dtos.UpdateCustomerRequest;
 import pl.edu.wat.customerreservations.entities.CustomerEntity;
+import pl.edu.wat.customerreservations.entities.ReservationEntity;
 import pl.edu.wat.customerreservations.repositories.CustomerRepository;
 
 import javax.persistence.EntityNotFoundException;
@@ -53,14 +56,14 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Override
-    public ResponseEntity updateCustomer(CustomerRequest customerRequest, Long customerId) {
+    public ResponseEntity updateCustomer(UpdateCustomerRequest updateCustomerRequest) {
         try{
-            Optional<CustomerEntity> result = customerRepository.findById(customerId);
+            Optional<CustomerEntity> result = customerRepository.findById(updateCustomerRequest.getId());
             CustomerEntity customerEntity = result.get();
-            customerEntity.setName(customerRequest.getName());
-            customerEntity.setSurname(customerRequest.getSurname());
-            customerEntity.setLogin(customerRequest.getLogin());
-            customerEntity.setEmail(customerRequest.getEmail());
+            customerEntity.setName(updateCustomerRequest.getName());
+            customerEntity.setSurname(updateCustomerRequest.getSurname());
+            customerEntity.setLogin(updateCustomerRequest.getLogin());
+            customerEntity.setEmail(updateCustomerRequest.getEmail());
             customerRepository.save(customerEntity);
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {
@@ -69,10 +72,14 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Override
-    public ResponseEntity deleteCustomer(Long customerId) {
+    public ResponseEntity deleteCustomer(Long id) {
         try {
-            Optional<CustomerEntity> result = customerRepository.findById(customerId);
+            Optional<CustomerEntity> result = customerRepository.findById(id);
             CustomerEntity customerEntity = result.get();
+            for (ReservationEntity reservationEntity:
+                 customerEntity.getReservationEntities()) {
+                reservationService.deleteReservation(reservationEntity.getId());
+            }
             customerRepository.delete(customerEntity);
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {

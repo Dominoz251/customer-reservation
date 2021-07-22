@@ -11,8 +11,7 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReservationResponse {
-
+public class UpdateReservationRequest {
     private Long id;
     private String date;
     private Long customerId;

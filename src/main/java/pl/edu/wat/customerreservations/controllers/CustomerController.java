@@ -1,16 +1,19 @@
 package pl.edu.wat.customerreservations.controllers;
 
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.wat.customerreservations.dtos.CustomerRequest;
 import pl.edu.wat.customerreservations.dtos.CustomerResponse;
+import pl.edu.wat.customerreservations.dtos.UpdateCustomerRequest;
 import pl.edu.wat.customerreservations.services.CustomerService;
 
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class CustomerController {
 
     private final CustomerService customerServicie;
@@ -32,14 +35,13 @@ public class CustomerController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
-    @PutMapping(path = "api/customer&customerId={id}")
-    public ResponseEntity updateCustomer(@RequestBody CustomerRequest customerRequest,
-                                         @PathVariable Long id) {
-        return customerServicie.updateCustomer(customerRequest, id);
+    @PutMapping(path = "api/customer")
+    public ResponseEntity updateCustomer(@RequestBody UpdateCustomerRequest updateCustomerRequest) {
+        return customerServicie.updateCustomer(updateCustomerRequest);
     }
 
-    @DeleteMapping(path = "api/customer&customerId={id}")
-    public ResponseEntity deleteCustomer(@PathVariable Long id) {
+    @DeleteMapping(path = "api/customer-delete&customerid={id}")
+    public ResponseEntity deleteCustomer(@PathVariable("id") Long id) {
         return customerServicie.deleteCustomer(id);
     }
 }

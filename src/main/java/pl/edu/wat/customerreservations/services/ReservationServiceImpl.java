@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import pl.edu.wat.customerreservations.dtos.ReservationRequest;
 import pl.edu.wat.customerreservations.dtos.ReservationResponse;
+import pl.edu.wat.customerreservations.dtos.UpdateReservationRequest;
 import pl.edu.wat.customerreservations.entities.CustomerEntity;
 import pl.edu.wat.customerreservations.entities.ReservationEntity;
 import pl.edu.wat.customerreservations.repositories.CustomerRepository;
@@ -32,8 +33,8 @@ public class ReservationServiceImpl implements ReservationService{
     public List<ReservationResponse> getAllReservations() {
         return StreamSupport.stream(reservationRepository.findAll().spliterator(), false)
                 .map(reservationEntity -> new ReservationResponse(reservationEntity.getId(),
-                        reservationEntity.getSeatNumber(), reservationEntity.getDateFrom(),
-                        reservationEntity.getDateTo(), reservationEntity.getCustomerEntity().getId(),
+                        reservationEntity.getDate(),
+                        reservationEntity.getCustomerEntity().getId(),
                         reservationEntity.getCustomerEntity().getLogin()))
                 .collect(Collectors.toList());
     }
@@ -43,22 +44,27 @@ public class ReservationServiceImpl implements ReservationService{
         return StreamSupport.stream(reservationRepository.findReservationEntityByCustomerEntity(customerEntity)
         .spliterator(), false)
                 .map(reservationEntity -> new ReservationResponse(reservationEntity.getId(),
-                    reservationEntity.getSeatNumber(), reservationEntity.getDateFrom(),
-                    reservationEntity.getDateTo(), reservationEntity.getCustomerEntity().getId(),
+                    reservationEntity.getDate(), reservationEntity.getCustomerEntity().getId(),
                         reservationEntity.getCustomerEntity().getLogin()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getBussyDates() {
+        return StreamSupport.stream(reservationRepository.findAll().spliterator(), false)
+                .map(reservationEntity -> reservationEntity.getDate())
                 .collect(Collectors.toList());
     }
 
 
     @Override
-    public ResponseEntity addNewReservation(ReservationRequest reservationRequest, Long customerId) {
+    public ResponseEntity addNewReservation(ReservationRequest reservationRequest) {
         try {
-            Optional<CustomerEntity> result = customerRepository.findById(customerId);
+            Optional<CustomerEntity> result = customerRepository.findById(reservationRequest.getCutomerId());
             CustomerEntity customerEntity = result.get();
+            System.out.println(reservationRequest.getDate().toString());
             ReservationEntity reservationEntity= new ReservationEntity();
-            reservationEntity.setSeatNumber(reservationRequest.getSeatNumber());
-            reservationEntity.setDateFrom(reservationRequest.getDateFrom());
-            reservationEntity.setDateTo(reservationEntity.getDateTo());
+            reservationEntity.setDate(reservationRequest.getDate());
             reservationEntity.setCustomerEntity(customerEntity);
             reservationRepository.save(reservationEntity);
             return new ResponseEntity(HttpStatus.CREATED);
@@ -68,16 +74,11 @@ public class ReservationServiceImpl implements ReservationService{
     }
 
     @Override
-    public ResponseEntity updateReservation(ReservationRequest reservationRequest, Long customerId, Long reservationId) {
+    public ResponseEntity updateReservation(UpdateReservationRequest updateReservationRequest) {
         try {
-            Optional<CustomerEntity> result = customerRepository.findById(customerId);
-            CustomerEntity customerEntity = result.get();
-            Optional<ReservationEntity> reservationEntityOptional = reservationRepository.findById(reservationId);
+            Optional<ReservationEntity> reservationEntityOptional = reservationRepository.findById(updateReservationRequest.getId());
             ReservationEntity reservationEntity = reservationEntityOptional.get();
-            reservationEntity.setSeatNumber(reservationRequest.getSeatNumber());
-            reservationEntity.setDateFrom(reservationRequest.getDateFrom());
-            reservationEntity.setDateTo(reservationEntity.getDateTo());
-            reservationEntity.setCustomerEntity(customerEntity);
+            reservationEntity.setDate(updateReservationRequest.getDate());
             reservationRepository.save(reservationEntity);
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {
@@ -86,10 +87,8 @@ public class ReservationServiceImpl implements ReservationService{
     }
 
     @Override
-    public ResponseEntity deleteReservation(Long customerId, Long reservationId) {
+    public ResponseEntity deleteReservation(Long reservationId) {
         try {
-            Optional<CustomerEntity> result = customerRepository.findById(customerId);
-            CustomerEntity customerEntity = result.get();
             Optional<ReservationEntity> reservationEntityOptional = reservationRepository.findById(reservationId);
             ReservationEntity reservationEntity = reservationEntityOptional.get();
             reservationRepository.delete(reservationEntity);
@@ -98,4 +97,7 @@ public class ReservationServiceImpl implements ReservationService{
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
     }
+
+
+
 }

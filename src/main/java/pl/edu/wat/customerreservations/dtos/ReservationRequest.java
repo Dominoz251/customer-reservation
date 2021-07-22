@@ -14,8 +14,6 @@ import java.util.Date;
 @NoArgsConstructor
 public class ReservationRequest {
 
-    private int seatNumber;
-    private Date dateFrom;
-    private Date dateTo;
+    private String date;
     private Long cutomerId;
 }

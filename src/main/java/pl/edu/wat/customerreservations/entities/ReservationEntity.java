@@ -13,9 +13,7 @@ public class ReservationEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private int seatNumber;
-    private Date dateFrom;
-    private Date dateTo;
+    private String date;
 
     @ManyToOne
     private CustomerEntity customerEntity;
